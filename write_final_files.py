@@ -73,25 +73,22 @@ for data in datalist:
 
 	outname = "_".join(data.split("_")[0:2]) + "smois"
 
-	dfmet_interp.plot()
-	plt.savefig(outname)
-
 
 	# this is the maximum spacing that's allowed...
-	# max_gap = 18
+	max_gap = 18
 
-	# # loop through all of the vaiables them..
-	# for var in dfmet.columns:
-	# 	print("%s: the maximum number of sequential timesteps missing is... %s"%(var, gaps[var].max()))
-	# 	dfmet_interp[var][gaps[var]>max_gap] = np.NaN
+	# loop through all of the vaiables them..
+	for var in dfmet.columns:
+		print("%s: the maximum number of sequential timesteps missing is... %s"%(var, gaps[var].max()))
+		dfmet_interp[var][gaps[var]>max_gap] = np.NaN
 
-	# # fill value = -9999
-	# output_file = dfmet_interp.resample("1h").median()
+	# fill value = -9999
+	output_file = dfmet_interp.resample("1h").median()
 
 
-	# # now save it
-	# outname = "_".join(data.split("_")[0:2]) + "_final_output.csv"
-	# output_file.to_csv(outname, index_label='TIMESTAMP')
+	# now save it
+	outname = "_".join(data.split("_")[0:2]) + "_final_output.csv"
+	output_file.to_csv(outname, index_label='TIMESTAMP')
 
 
 
