@@ -6,6 +6,21 @@ from datetime import timedelta
 import sys
 
 
+### This code reads the files that are written by the previous script,
+### called "process_data_initial.py"
+
+
+## Purpose 
+## -------
+##  1) remove duplicate timesteps 
+##  2) add missing timesteps and fill with NA value
+##  3) **interpolate between missing values**. only do this step for gaps 
+##     that are less than a certain lenght. the length is a variable that 
+##     that can be changed around. 
+##  4) resample the data from 10 minute to hourly
+##  5) write a friendly and readable csv file 
+
+# begin
 processed_base = pl.Path("/Volumes/Transcend/snowex_raw_met_data/pandas_ready")
 
 datalist  = ["MM_Table1_pandas_happy.dat",
@@ -53,13 +68,13 @@ for data in datalist:
 	# print out how many missing times there are
 	print("Total # of missing timesteps: %s"%missing_times)
 
-
-	# reindex the data... this will ardd nans to spots where there is no data
+	# "reindex" the data... this will add nans to spots where there is no data
 	dfmet = dfmet.reindex(the_right_dates)
 
 	# make the data numeric...
+        # this is because pandas treats the data as strings in some cases
+        # also converts strings of "NaN" to numpy NaN types 
 	dfmet = dfmet.apply(pd.to_numeric, errors='coerce')
-
 
 	# interpolate the data linearly
 	# later we will remove the values that have too-long of gaps
@@ -71,19 +86,17 @@ for data in datalist:
 	dmetnull = dfmet.isnull()
 	gaps = dmetnull.ne(dmetnull.shift()).cumsum().apply(lambda x: x.map(x.value_counts())).where(dmetnull)
 
-	outname = "_".join(data.split("_")[0:2]) + "smois"
-
-
 	# this is the maximum spacing that's allowed...
-	max_gap = 18
-
-	# loop through all of the vaiables them..
+	# this is equivalent to 3 hrs
+        max_gap = 18 
+	
+        # loop through all of the vaiables them..
 	for var in dfmet.columns:
 		print("%s: the maximum number of sequential timesteps missing is... %s"%(var, gaps[var].max()))
 		dfmet_interp[var][gaps[var]>max_gap] = np.NaN
 
-	# fill value = -9999
-	output_file = dfmet_interp.resample("1h").median()
+	# apply a mean filter to resample from 10min --> 1hr 
+	output_file = dfmet_interp.resample("1h").mean()
 
 
 	# now save it
