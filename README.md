@@ -38,6 +38,7 @@ The following data variables are targetted. Raw data comes at a 10 minute sampli
 https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
 4. Resample the 10-minute data to an hourly frequency 
    * This is performed using the pandas.resample function
+   * A mean filter is used to perform the resampling 
    * https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html	
 5. Manually fix remove anomalies
 
