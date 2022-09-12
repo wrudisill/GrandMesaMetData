@@ -133,15 +133,26 @@ def snow_depth_fixer(data):
 # lets us use the above function in other scripts
 if __name__ == "__main__":
 
-	pass
-	# outname = "_".join(data.split("_")[0:2]) + "_snowd_plot.png"
 
-	# # make a plot
-	# fig,ax = plt.subplots()
-	# ax.plot(dfsd.index, dfsd.TCDT_Avg)
-	# ax.plot(hrly_sd.index, hrly_sd)
-	# plt.savefig(outname)
-	# plt.clf()
+	datalist  = ["MM_Table1_pandas_happy.dat",
+	         "LSOS_Table1_pandas_happy.dat",
+	         "ME_Table1_pandas_happy.dat",
+	         "GMSP2_Table1_pandas_happy.dat",
+	         "MW_Table1_pandas_happy.dat"]
+
+
+	#data = "MM_Table1_pandas_happy.dat"
+
+
+	for data in datalist:
+		snow_depth = snow_depth_fixer(data)
+		outname = "_".join(data.split("_")[0:2]) + "_snowd_plot.png"
+
+		# make a plot
+		fig,ax = plt.subplots()
+		ax.plot(snow_depth.index, snow_depth)
+		plt.savefig(outname)
+		plt.clf()
 
 
 
