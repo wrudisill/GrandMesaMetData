@@ -13,6 +13,15 @@ This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.
 
 2. There are some additional quotation marks in the “NaN” string in the .dat files. This can cause a headache potentially when reading the data. Applying the pandas “.to_numeric” method with the “coerce=True” simply converts any string character to NaN. 
 
+3. The raw data contains some unrealistically low values for barometric pressure for some of the sites (~400 hPa). A value of ~700 hPa is more correct for the elevation (~10k feet) 
+
+4. There are several notable data gaps. They are generally consistent for all of the variables, but not always. 
+
+5. The downward facing and upward facing radiation measurements may cause some confusion. The "Dn" (down) and "Up" (upward) shorthand refers t the direction that the radiometer/pyrgeometer is facing. So a downward facing radiometer is actually measuring the radiation reflected/emitted from the ground (i.e., ground --> atmosphere). 
+
+6. The snow depth data contains non-zero values that are likely a combination of vegetation and other phenomena during the spring/summer, after snowmelt. This can/should be accounted for by the user (masking by air temperature, for example). A temperature correction has been applied to correct the sonic depth measurement. The formula is provided in the Campbell documentation. 
+
+
 ## Data Variables 
 The following data variables are targetted. Raw data comes at a 10 minute sampling frequency. Level (XX) products have hourly frequency. Users who desire sub-hourly data should work with the raw files and can use the scripts presented here to assist with this. 
 
