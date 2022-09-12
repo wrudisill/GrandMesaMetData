@@ -4,22 +4,7 @@ Date 9/7/22
 
 
 ## Background
-This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.gov/campaigns/snowex) meteorological data collected during 2017-2020 field campaigns in Grand Mesa, Colorado. 
-
-
-
-## General Notes
-1. In the raw data, in some instances the data logger does not report data at every 10 minute interval, so each data point can be “sandwiched” by NaN values. In this case a plotting library (such as python matplotlib…) may not plot lines through these data points by default, making it look like large chunks of data are missing 
-
-2. There are some additional quotation marks in the “NaN” string in the .dat files. This can cause a headache potentially when reading the data. Applying the pandas “.to_numeric” method with the “coerce=True” simply converts any string character to NaN. 
-
-3. The raw data contains some unrealistically low values for barometric pressure for some of the sites (~400 hPa). A value of ~700 hPa is more correct for the elevation (~10k feet) 
-
-4. There are several notable data gaps. They are generally consistent for all of the variables, but not always. 
-
-5. The downward facing and upward facing radiation measurements may cause some confusion. The "Dn" (down) and "Up" (upward) shorthand refers t the direction that the radiometer/pyrgeometer is facing. So a downward facing radiometer is actually measuring the radiation reflected/emitted from the ground (i.e., ground --> atmosphere). 
-
-6. The snow depth data contains non-zero values that are likely a combination of vegetation and other phenomena during the spring/summer, after snowmelt. This can/should be accounted for by the user (masking by air temperature, for example). A temperature correction has been applied to correct the sonic depth measurement. The formula is provided in the Campbell documentation. 
+This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.gov/campaigns/snowex) meteorological data collected during 2017-2020 field campaigns in Grand Mesa, Colorado. The "raw" data is in 10 minute format. These scripts clean and process data to a 1-hour frequency and correct/fix/remove anomalous values. The variables include radiation (4-component, short and long), temperature, relative humidity, pressure, snow-depth, soil-moisture, wind speed and wind direction.
 
 
 ## Data Variables 
@@ -45,6 +30,8 @@ Soil Variables:
 2. SM_20cm_Avg: Soil moisture at 20cm depth (volumetric)
 3. SM_50cm_Avg: Soil moisture at 50cm depth (volumetric)
 
+Snow Variables:
+1. SnowDepth(cm): Depth of snowpack on the ground. 
 ## Methods
 
 1. Convert .dat files from campbell logger to .csv files that are easily parsable by python “Pandas” library. The script "process_data_initial.py" was used to do this and the comments therein describe some of the steps.
@@ -60,4 +47,23 @@ https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
    * A mean filter is used to perform the resampling 
    * Wind direction (cirular quantity) is appropriately dealt with for both interpolation and the resampling 
    * https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html	
+
+## Additional Methods/Special Cases
+1. Longwave radiation at site MM (mes middle) was corrected for in the "look_at_bad_lw_site_mm" file. There was a period of too-high values interspersed throughout good data. To preserve good data, a filtering method is applied. The details are in the look_at_bad_lw_site_mm.py file.  It includes looking at the standard deviation of the 10minue intervals and applying several rule based filters. 
+2. Snow depth is calculated for all stations using the "snow_depth_fixer.py" script. The sensor records distance-to-ground using an ultrasonic sound wave reflection. The distance is corrected to account for temperature (following manufacturer instructions). Returns can occur due to blowing snow and other factors -- these have been filtered as best as possible. To do so, timesteps with high standard deviations (10-minute window) are removed. An automated method is used to determine the ground surface (the maxium, weekly median for each October-October period). There is some ambiguity as vegetation growth/change and station subsidence can impact the maximum depth from sensor to ground.
+
+
+## General Notes
+1. In the raw data, in some instances the data logger does not report data at every 10 minute interval, so each data point can be “sandwiched” by NaN values. In this case a plotting library (such as python matplotlib…) may not plot lines through these data points by default, making it look like large chunks of data are missing 
+
+2. There are some additional quotation marks in the “NaN” string in the .dat files. This can cause a headache potentially when reading the data. Applying the pandas “.to_numeric” method with the “coerce=True” simply converts any string character to NaN. 
+
+3. The raw data contains some unrealistically low values for barometric pressure for some of the sites (~400 hPa). A value of ~700 hPa is more correct for the elevation (~10k feet) 
+
+4. There are several notable data gaps. They are generally consistent for all of the variables, but not always. 
+
+5. The downward facing and upward facing radiation measurements may cause some confusion. The "Dn" (down) and "Up" (upward) shorthand refers t the direction that the radiometer/pyrgeometer is facing. So a downward facing radiometer is actually measuring the radiation reflected/emitted from the ground (i.e., ground --> atmosphere). 
+
+6. The snow depth data contains non-zero values that are likely a combination of vegetation and other phenomena during the spring/summer, after snowmelt. This can/should be accounted for by the user (masking by air temperature, for example). A temperature correction has been applied to correct the sonic depth measurement. The formula is provided in the Campbell documentation. 
+
 
