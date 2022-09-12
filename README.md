@@ -4,9 +4,7 @@ Date 9/7/22
 
 
 ## Background
-This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.gov/campaigns/snowex) meteorological data collected during 2017-2020 field campaigns in Grand Mesa, Colorado. 
-
-
+This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.gov/campaigns/snowex) meteorological data collected during 2017-2020 field campaigns in Grand Mesa, Colorado. The "raw" data is in 10 minute format. These scripts clean and process data to a 1-hour frequency and correct/fix/remove anomalous values. The variables include radiation (4-component, short and long), temperature, relative humidity, pressure, snow-depth, soil-moisture, wind speed and wind direction.
 
 ## General Notes
 1. In the raw data, in some instances the data logger does not report data at every 10 minute interval, so each data point can be “sandwiched” by NaN values. In this case a plotting library (such as python matplotlib…) may not plot lines through these data points by default, making it look like large chunks of data are missing 
@@ -45,6 +43,8 @@ Soil Variables:
 2. SM_20cm_Avg: Soil moisture at 20cm depth (volumetric)
 3. SM_50cm_Avg: Soil moisture at 50cm depth (volumetric)
 
+Snow Variables:
+1. SnowDepth(cm): Depth of snowpack on the ground. 
 ## Methods
 
 1. Convert .dat files from campbell logger to .csv files that are easily parsable by python “Pandas” library. The script "process_data_initial.py" was used to do this and the comments therein describe some of the steps.
@@ -60,4 +60,8 @@ https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
    * A mean filter is used to perform the resampling 
    * Wind direction (cirular quantity) is appropriately dealt with for both interpolation and the resampling 
    * https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html	
+
+## Additional Methods/Special Cases
+1. Longwave radiation at site MM (mes middle) was corrected for in the "look_at_bad_lw_site_mm" file. There was a period of too-high values interspersed throughout good data. To preserve good data, a filtering method is applied. The details are in the look_at_bad_lw_site_mm.py file.  It includes looking at the standard deviation of the 10minue intervals and applying several rule based filters. 
+2. Snow depth is calculated for all stations using the "snow_depth_fixer.py" script. The sensor records distance-to-ground using an ultrasonic sound wave reflection. The distance is corrected to account for temperature (following manufacturer instructions). Returns can occur due to blowing snow and other factors -- these have been filtered as best as possible. To do so, timesteps with high standard deviations (10-minute window) are removed. An automated method is used to determine the ground surface (the maxium, weekly median for each October-October period). There is some ambiguity as vegetation growth/change and station subsidence can impact the maximum depth from sensor to ground.
 
