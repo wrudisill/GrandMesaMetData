@@ -66,6 +66,6 @@ https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
 
 5. The downward facing and upward facing radiation measurements may cause some confusion. The "Dn" (down) and "Up" (upward) shorthand refers t the direction that the radiometer/pyrgeometer is facing. So a downward facing radiometer is actually measuring the radiation reflected/emitted from the ground (i.e., ground --> atmosphere). 
 
-6. The snow depth data contains non-zero values that are likely a combination of vegetation and other phenomena during the spring/summer, after snowmelt. This can/should be accounted for by the user (masking by air temperature, for example). A temperature correction has been applied to correct the sonic depth measurement. The formula is provided in the Campbell documentation. 
+6. The snow depth data contains non-zero values that are likely a combination of vegetation and other phenomena during the spring/summer, after snowmelt. This can/should be accounted for by the user (masking by air temperature, for example). A temperature correction has been applied to correct the sonic depth measurement using the average (10 minute) air temperature at the 10ft level. The formula is provided in the Campbell documentation. Still, care should be taken if interpreting sub-daily snow depth patterns/trends as temperature fluctuations impact this. 
 
 
