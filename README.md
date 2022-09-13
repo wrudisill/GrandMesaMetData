@@ -8,7 +8,7 @@ This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.
 
 
 ## Data Variables 
-The following data variables are targetted. Raw data comes at a 10 minute sampling frequency. Level (XX) products have hourly frequency. Users who desire sub-hourly data should work with the raw files and can use the scripts presented here to assist with this. 
+The following data variables are targetted. Raw data comes at a 10 minute sampling frequency. "Level 3" products have hourly frequency. Users who desire sub-hourly data should work with the raw files and can use the scripts presented here to assist with this. 
 
 Meteorological Variables
 1. Average AirTC_10ft (oC): Campbell HC253 Air Temperature, 10ft tower level
@@ -32,14 +32,15 @@ Soil Variables:
 
 Snow Variables:
 1. SnowDepth(cm): Depth of snowpack on the ground. 
+
 ## Methods
 
-1. Convert .dat files from campbell logger to .csv files that are easily parsable by python “Pandas” library. The script "process_data_initial.py" was used to do this and the comments therein describe some of the steps.
-2. Clean 10-minute data to look for periods of suspect data quality 
+1. Convert .dat files from campbell logger to .csv files that are easily parsable by python “Pandas” library. The script "process_data_initial.py" was used to do this and the comments therein describe some of the steps. Bascially the only required steps were to fix some of slightly off formatting/additional quotation marks in the raw ".dat" files 
+3. Clean 10-minute data to look for periods of suspect data quality 
    * Identify number of 1) missing and 2) duplicated timesteps
    * If a timestep is duplicated, keep the first one and discard the rest  
    * If a timestep is missing, fill with NaNs
-3. Linearly interpolate between good and missing values IF there is less than a 3-hour gap. Otherwise leave values as NaN. This is performed using the pandas.interpolate function
+4. Linearly interpolate between good and missing values IF there is less than a 3-hour gap. Otherwise leave values as NaN. This is performed using the pandas.interpolate function
 https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
 4. Manually fix remove anomalies that remain. There are only a few, and the list of conditions where manual corrections are applied can be found in the write_final_files.py code. 
 5. Resample the 10-minute data to an hourly frequency 
@@ -50,6 +51,7 @@ https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
 
 ## Additional Methods/Special Cases
 1. Longwave radiation at site MM (mes middle) was corrected for in the "look_at_bad_lw_site_mm" file. There was a period of too-high values interspersed throughout good data. To preserve good data, a filtering method is applied. The details are in the look_at_bad_lw_site_mm.py file.  It includes looking at the standard deviation of the 10minue intervals and applying several rule based filters. 
+
 2. Snow depth is calculated for all stations using the "snow_depth_fixer.py" script. The sensor records distance-to-ground using an ultrasonic sound wave reflection. The distance is corrected to account for temperature (following manufacturer instructions). Returns can occur due to blowing snow and other factors -- these have been filtered as best as possible. To do so, timesteps with high standard deviations (10-minute window) are removed. An automated method is used to determine the ground surface (the maxium, weekly median for each October-October period). There is some ambiguity as vegetation growth/change and station subsidence can impact the maximum depth from sensor to ground.
 
 
@@ -58,7 +60,7 @@ https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
 
 2. There are some additional quotation marks in the “NaN” string in the .dat files. This can cause a headache potentially when reading the data. Applying the pandas “.to_numeric” method with the “coerce=True” simply converts any string character to NaN. 
 
-3. The raw data contains some unrealistically low values for barometric pressure for some of the sites (~400 hPa). A value of ~700 hPa is more correct for the elevation (~10k feet) 
+3. The raw data contains some unrealistically low values for barometric pressure for some of the sites (~400 hPa). A value of ~700 hPa is more correct for the elevation (~10k feet). Also the Mesa Middle (mm) and Mesa West (mw) sites report pressure values incorrectly. They have been ommitted from the dataset. 
 
 4. There are several notable data gaps. They are generally consistent for all of the variables, but not always. 
 
