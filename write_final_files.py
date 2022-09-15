@@ -30,32 +30,33 @@ processed_base = pl.Path("/Volumes/Transcend/snowex_raw_met_data/pandas_ready")
 
 #datalist = ["GMSP1_Table1_pandas_happy.dat"]
 
-datalist  = ["MM_Table1_pandas_happy.dat",
-             "LSOS_Table1_pandas_happy.dat",
-             "ME_Table1_pandas_happy.dat",
-             "GMSP2_Table1_pandas_happy.dat",
-             "MW_Table1_pandas_happy.dat"]
+datalist  = ["ME_Table1_pandas_ready.csv",
+             "GMSP2_Table1_pandas_ready.csv",
+             "MW_Table1_pandas_ready.csv",
+             "MM_Table1_pandas_ready.csv",
+             "LSOS_Table1_pandas_ready.csv"]
 
-
-#data = "MM_Table1_pandas_happy.dat"
 
 
 for data in datalist:
 
-
     # open up the dataframe...
-    df = pd.read_csv(processed_base.joinpath(data), low_memory=False).iloc[:,1:]
+    df = pd.read_csv(processed_base.joinpath(data), low_memory=False)
+
     df.TIMESTAMP = pd.to_datetime(df.TIMESTAMP)
     df = df.set_index("TIMESTAMP")
 
     # get just the vars that we want..
     met_vars  = ["RH_10ft", "RH_20ft", "BP_kPa_Avg",
-                 "AirTC_20ft", "AirTC_10ft",
-                 "WSms_20ft", "WSms_10ft",
+                 "AirTC_20ft_Avg", "AirTC_10ft_Avg",
+                 "WSms_20ft_Avg", "WSms_10ft_Avg",
                  "WindDir_10ft_SD1_WVT", "WindDir_20ft_SD1_WVT",
                  "SUp_Avg", "SDn_Avg",
                  "LUpCo_Avg", "LDnCo_Avg",
-                 "SM_5cm_Avg", "SM_20cm_Avg", "SM_50cm_Avg"]
+                 "SM_5cm_Avg", "SM_20cm_Avg", "SM_50cm_Avg",
+                 "TC_5cm_Avg", "TC_20cm_Avg", "TC_50cm_Avg"]
+
+
 
 
     dfmet = df[met_vars]
@@ -93,8 +94,7 @@ for data in datalist:
 
 
     # correct longwave...
-    if data == "MM_Table1_pandas_happy.dat":
-
+    if data == "MM_Table1_pandas_ready.csv":
         # correct wierd lw data
         lw_corrected = fix_mm_lw()
         dfmet['LDnCo_Avg'][lw_corrected.index] = lw_corrected
@@ -146,30 +146,23 @@ for data in datalist:
 
 
     # DO THE SNOWDEPTH CALCULATION #
-    snow_depth = snow_depth_fixer(data)
-    output_file['SnowDepth(m)'] = snow_depth
+    dfsd = snow_depth_fixer(data)
+    output_file['DistanceSensToGnd(m)'] = dfsd.SnowDepth.resample("1h").mean()
+    output_file['SnowDepthFilter(m)']   = dfsd.SnowDepthFilt.resample("1h").mean()
 
 
     ####################################
     # APPLY SITE SPECIFIC FUNCTIONS HERE
     ####################################
 
-    # Mesa Middle Corrections
-    if data == "MM_Table1_pandas_happy.dat":
-
-        # remove one anomalous pressure spike
-        output_file.BP_kPa_Avg.loc["2020-10-06 22:00" : "2020-10-06 23:00"] = np.nan
-
     # Mesa East Corrections
-    if data == "ME_Table1_pandas_happy.dat":
+    if data == "ME_Table1_pandas_ready.csv":
         # persistent pressure drop off
         output_file['BP_kPa_Avg'].loc['2021-12-11':] = np.nan
 
-    # Mesa West Corrections
-    if data == "MW_Table1_pandas_happy.dat":
-        # pressure spike
-        output_file.BP_kPa_Avg.loc["2020-02-25 17:00" : "2020-02-26 00:00"] = np.nan
-        output_file.BP_kPa_Avg.loc["2018-04-13 20:00" : "2018-04-13 22:00"] = np.nan
+    # thes are not reporting correctly for whatever reason
+    if data in ["MW_Table1_pandas_ready.csv", "MM_Table1_pandas_ready.csv"]:
+        output_file['BP_kPa_Avg'] = np.nan
 
     ####################################
     # END SITE SPECIFIC FUNCTIONS
