@@ -4,44 +4,85 @@ import pandas as pd
 import pathlib as pl
 
 
-## README -- the purpose of this script is to fix some weird formatting that was
-## in some, but not all, of the original .dat files
-## there were extra commas at the beginning of some lines, which messed up 
-## reading the data into pandas. i ran this script one-at-a time to 
-## fix the files that had this issue 
 
+#raw_base = pl.Path("/Volumes/Transcend/snowex_raw_met_data/raw/10minute")
 
-raw_base = pl.Path("/Volumes/Transcend/snowex_raw_met_data/raw/10minute")
+raw_base = pl.Path("/Volumes/Transcend/snowex_raw_met_data/NewDataAug2022")
 processed_base = pl.Path("/Volumes/Transcend/snowex_raw_met_data/partially_processed")
+final_processed_base = pl.Path("/Volumes/Transcend/snowex_raw_met_data/pandas_ready")
 
 list_of_newlines = []
 
-#dfile = raw_base.joinpath("ME_Table1.dat")
-#dfile = raw_base.joinpath("MM_Table1.dat")
-#dfile = raw_base.joinpath("GMSP2_Table1.dat")
-dfile = raw_base.joinpath("MW_Table1.dat")
+
+dfilelist = [#"ME_Table1.dat"]
+  		    # "MM_Table1.dat"]
+			#"GMSP2_Table1.dat"]
+			 "MW_Table1.dat"]
 
 
-# you have to specify the encoding when opening
-# some of the files might have been utf-8 for some reason...
-# again i did this one file at a time since they were not all consistent 
-with open(dfile, encoding='utf-16') as f:
-    # loop through each line of the file and only keep the first to second to last lines
-    for i in f:
-    	list_of_newlines.append(i[1:-2])
 
-# open up a new file and write the corrected lines there 
-with open(processed_base.joinpath(dfile.name), encoding='utf-16', mode='w') as f:
-    for i in list_of_newlines:
-    	f.write(i)
-        # this is the newline character 
-    	f.write("\n")
+# loop thru all of the files...
+for d in dfilelist:
+
+	### PART 1: DO INITIAL CLEANING
+	dfile = raw_base.joinpath(d)
+
+	# open up the file..
+	with open(dfile, encoding='utf-16') as f:
+	    for i in f:
+	    	list_of_newlines.append(i[1:-2])
 
 
-print("done with dfile")
+	# remove the file if it already exist...
+	if processed_base.joinpath(dfile.name).is_file():
+		processed_base.joinpath(dfile.name).unlink()
 
-#df = pd.read_csv(processed_base.joinpath("GMSP2_Table1.txt"), encoding = 'utf-16', sep=',', skiprows=1)
 
-#df = pd.read_csv(processed_base.joinpath(dfile.name), encoding='utf-16', skiprows=3)
+	 # this writes out a corrected one
+	with open(processed_base.joinpath(dfile.name), encoding='utf-16', mode='w') as f:
+	    for i in list_of_newlines:
+	    	f.write(i)
+	    	f.write("\n")
 
-df = pd.read_csv(processed_base.joinpath(dfile.name), encoding='utf-16', skiprows=4)
+	#### PART 2: NOW MAKE IT PANDAS FRIENDLY ###
+
+	cnames = pd.read_csv(processed_base.joinpath(dfile.name), encoding='utf-16', skiprows=0, nrows=1).columns
+#	cnames = pd.read_csv(processed_base.joinpath(dfile.name), encoding='utf-16', skiprows=1, nrows=1).columns
+
+	# make a new list for the corrected column names
+	cnames_corr = []
+
+	# this fixes some of the weird quotes
+	for c in cnames:
+	    if c[-2:] == '""':
+	        cnames_corr.append(c[:-2])
+	    else:
+	        cnames_corr.append(c)
+
+	# make the dataframe
+	df = pd.read_csv(processed_base.joinpath(dfile.name), encoding='utf-16', skiprows=4)
+	df.columns = cnames_corr
+
+	dfix=[]
+	for d in df.TIMESTAMP:
+	    if str(d)[-1] == '"':
+	        dfix.append(str(d)[:-1])
+	    else:
+	        dfix.append(str(d))
+
+
+	df.TIMESTAMP = pd.to_datetime(dfix, errors="coerce")
+	df = df.set_index("TIMESTAMP")
+	df = df.sort_index()
+	df = df[~df.index.isna()] # we get some spots where there are NaTs...drop the not times
+
+
+	outname = final_processed_base.joinpath(dfile.name.split(".")[0] + "_pandas_ready.csv")
+
+	# save the csv
+	df.to_csv(outname)
+
+
+
+### LOOK AT THE ORIGINAL DATA...
+
