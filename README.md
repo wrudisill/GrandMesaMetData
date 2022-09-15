@@ -1,5 +1,5 @@
 # Grand Mesa Meteorological Data Processing Notes 
-Author: Will Rudisill
+Author: William Rudisill
 Date 9/7/22
 
 
@@ -29,11 +29,15 @@ Soil Variables:
 1. SM_5cm_Avg: Soil moisture at 5cm depth (volumetric)
 2. SM_20cm_Avg: Soil moisture at 20cm depth (volumetric)
 3. SM_50cm_Avg: Soil moisture at 50cm depth (volumetric)
+4. TC_5cm_Avg: Soil temperature at 5cm depth  (degC)
+5. TC_20cm_Avg: Soil temperature at 20cm depth (degC)
+6. TC_50cm_Avg: Soil temperature at 50cm depth (degC)
 
 Snow Variables:
-1. SnowDepth(cm): Depth of snowpack on the ground. 
+1. SnowDepthFiltered(m): Depth of snowpack on the ground with periods of no-snow filtered out
+2. SnowDepthUnFiltered(m): Depth of snowpack on the grounh, no filtering of snow free periods.
 
-## Methods
+## Purpose and Methods
 
 1. Convert .dat files from campbell logger to .csv files that are easily parsable by python “Pandas” library. The script "process_data_initial.py" was used to do this and the comments therein describe some of the steps. Bascially the only required steps were to fix some of slightly off formatting/additional quotation marks in the raw ".dat" files 
 3. Clean 10-minute data to look for periods of suspect data quality 
@@ -52,7 +56,7 @@ https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html
 ## Additional Methods/Special Cases
 1. Longwave radiation at site MM (mes middle) was corrected for in the "look_at_bad_lw_site_mm" file. There was a period of too-high values interspersed throughout good data. To preserve good data, a filtering method is applied. The details are in the look_at_bad_lw_site_mm.py file.  It includes looking at the standard deviation of the 10minue intervals and applying several rule based filters. 
 
-2. Snow depth is calculated for all stations using the "snow_depth_fixer.py" script. The sensor records distance-to-ground using an ultrasonic sound wave reflection. The distance is corrected to account for temperature (following manufacturer instructions). Returns can occur due to blowing snow and other factors -- these have been filtered as best as possible. To do so, timesteps with high standard deviations (10-minute window) are removed. An automated method is used to determine the ground surface (the maxium, weekly median for each October-October period). There is some ambiguity as vegetation growth/change and station subsidence can impact the maximum depth from sensor to ground.
+2. Snow depth is calculated for all stations using the "snow_depth_fixer.py" script. The sensor records distance-to-ground using an ultrasonic sound wave reflection. The distance is corrected to account for temperature (following manufacturer instructions). Returns can occur due to blowing snow and other factors -- these have been filtered as best as possible. To do so, timesteps with high standard deviations (10-minute window) are removed. An automated method is used to determine the ground surface (the maxium, weekly median for each October-October period). There is some ambiguity as vegetation growth/change and station subsidence can impact the maximum depth from sensor to ground. Snow free periods are identified using a rule based method, combining time of year and temperature measurements to identify no-snow periods. There is still some ambiguity on the start/end of the season, so the unfiltered snow-depth product is also included. Users should take care when interpreting snow depth and the beginning/ends of the accumulation/ablation seasons, respectively. 
 
 
 ## General Notes
