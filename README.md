@@ -4,7 +4,7 @@ Date 9/7/22
 
 
 ## Background
-This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.gov/campaigns/snowex) meteorological data collected during 2017-2020 field campaigns in Grand Mesa, Colorado. The "raw" data is in 10 minute format. These scripts clean and process data to a 1-hour frequency and correct/fix/remove anomalous values. The variables include radiation (4-component, short and long), temperature, relative humidity, pressure, snow-depth, soil-moisture, wind speed and wind direction.
+This collection of scripts are used to process NASA "Snowex" (https://snow.nasa.gov/campaigns/snowex) meteorological data collected during 2017-2022 field campaigns in Grand Mesa, Colorado. The "raw" data is in 10 minute format. These scripts clean and process data to a 1-hour frequency and correct/fix/remove anomalous values. The variables include radiation (4-component, short and long), temperature, relative humidity, pressure, snow-depth, soil-moisture, wind speed and wind direction.
 
 
 ## Data Variables 
